@@ -1,7 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'tranfer.dart';
-import 'database.dart';
+import 'package:qrcode_reader/QRCodeReader.dart';
+import 'dart:async';
 
 class AccountPage extends StatefulWidget {
   AccountPage({Key key}) : super(key: key);
@@ -11,6 +12,8 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
+  Future<String> futureString;
+  String test;
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -19,6 +22,7 @@ class _AccountPageState extends State<AccountPage> {
       ),
       body: new Center(
         child: new Column(
+
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             new Padding(
@@ -42,6 +46,7 @@ class _AccountPageState extends State<AccountPage> {
               ),
             ),
 
+
             new Padding(
               padding: const EdgeInsets.only(top: 48.0),
               child: new RaisedButton(
@@ -58,10 +63,21 @@ class _AccountPageState extends State<AccountPage> {
             new Padding(
               padding: const EdgeInsets.only(top: 12.0),
               child: new RaisedButton(
-                onPressed: () async {
+                onPressed: () {
+                  setState(() {
+                    futureString = new QRCodeReader().scan().then((test){
+                      return showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              content: Text(test),
+                            );
+                          });
+                    });
+                    test = futureString.toString();
+                    
 
-                  var money = await getTotalMoney();
-                  print(money);
+                  });
 
                 },
                 child: new Text("RECEIVE MONEY"),
@@ -82,6 +98,15 @@ class _AccountPageState extends State<AccountPage> {
               padding: const EdgeInsets.only(top: 12.0),
               child: new RaisedButton(
                 onPressed: () {
+                    if(futureString != null){
+                      return showDialog(
+                      context: context,
+                      builder: (context) {
+                      return AlertDialog(
+                    content: Text(test),
+                      );
+                    });}
+
 
                 },
                 child: new Text("STORE IT IN BANK ACCOUNT"),
@@ -90,6 +115,7 @@ class _AccountPageState extends State<AccountPage> {
 
           ],
         ),
+
       ),
 
     );
