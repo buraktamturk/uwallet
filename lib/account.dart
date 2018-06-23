@@ -11,6 +11,58 @@ import 'package:http/http.dart' as http;
 
 String faceId;
 
+Future<String> loginWithBanking(BuildContext context) async {
+  TextEditingController username = new TextEditingController();
+  TextEditingController password = new TextEditingController();
+
+  var token = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          content: new Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              new TextField(
+                controller: username,
+                decoration: InputDecoration(
+                  labelText: 'Login'
+              ),),
+              new TextField(
+                controller: password,
+                decoration: InputDecoration(
+                  labelText: 'Password'
+              ),),
+              new Padding(
+                  padding: const EdgeInsets.only(top: 24.0),
+                  child: new RaisedButton(onPressed: () async {
+
+                    var response = await http.post(
+                        'https://api.eu-de.apiconnect.ibmcloud.com/eurobankgr-hackathon/hackathon/oauth/token',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'grant_type=password&username=${username.text}&password=${password.text}'
+                    );
+
+                    print(response.body);
+                    var xx = json.decode(response.body);
+
+                    Navigator.pop(context, xx["access_token"]);
+
+                  },
+                    child: new Text("Login")
+                  ))
+            ],
+          ),
+        );
+      });
+
+  if(token == null) {
+    throw new Exception('Authentication failed!');
+  }
+
+  return token;
+}
+
+
 authenticate(BuildContext context) async {
 
 
@@ -19,7 +71,7 @@ authenticate(BuildContext context) async {
       context,
       MaterialPageRoute(builder: (context) => CameraApp()),
     );
-    
+
     var response = await http.post(
         'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/verify',
         headers: {
@@ -48,7 +100,7 @@ error(BuildContext context, Future e) async {
   } catch(e) {
     showDialog(context: context, builder: (BuildContext context) {
       return new AlertDialog(
-        content: e.message
+        content: new Text(e.message)
       );
     });
 
@@ -158,11 +210,11 @@ class _AccountPageState extends State<AccountPage> {
             new Padding(
               padding: const EdgeInsets.only(top: 48.0),
               child: new RaisedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CameraApp()),
-                  );
+                onPressed: () async {
+
+                  var token = await loginWithBanking(context);
+                  print(token);
+
                 },
                 child: new Text("LOAD IT FROM BANK ACCOUNT"),
               ),

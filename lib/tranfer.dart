@@ -52,6 +52,12 @@ class _TransferPageState extends State<TransferPage> {
                   }
                 );
 
+                try {
+                  await appendMoney(code);
+                } catch(e) {
+
+                }
+
                 Navigator.pop(context);
               },
               child: new Text("SEND"),
