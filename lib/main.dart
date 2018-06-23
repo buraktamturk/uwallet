@@ -1,8 +1,13 @@
 
 import 'package:flutter/material.dart';
 import 'account.dart';
+import 'recognition.dart';
+import 'package:camera/camera.dart';
 
-void main() => runApp(new MyApp());
+main() async {
+  cameras = await availableCameras();
+  runApp(new MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override

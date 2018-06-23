@@ -10,6 +10,7 @@ description: UWallet Mobile Application
 version: 1.0.0+1
 
 dependencies:
+  camera: 0.2.1
   qr_flutter: ^1.1.1
   qrcode_reader: ^0.3.3
   sqflite: any

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'tranfer.dart';
 import 'package:qrcode_reader/QRCodeReader.dart';
 import 'dart:async';
+import 'database.dart';
+import 'recognition.dart';
 
 class AccountPage extends StatefulWidget {
   AccountPage({Key key}) : super(key: key);
@@ -14,6 +16,20 @@ class AccountPage extends StatefulWidget {
 class _AccountPageState extends State<AccountPage> {
   Future<String> futureString;
   String test;
+
+  int money = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    getTotalMoney()
+      .then((a) {
+      setState(() { money = a; });
+    });
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -34,7 +50,7 @@ class _AccountPageState extends State<AccountPage> {
                     ),
 
                     new Text(
-                      '0€',
+                      '$money€',
                       style: Theme.of(context).textTheme.display3,
                     ),
 
@@ -50,11 +66,15 @@ class _AccountPageState extends State<AccountPage> {
             new Padding(
               padding: const EdgeInsets.only(top: 48.0),
               child: new RaisedButton(
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => TransferPage()),
                   );
+
+                  var a = await getTotalMoney();
+
+                  setState(() { money = a; });
                 },
                 child: new Text("SEND MONEY"),
               ),
@@ -63,21 +83,16 @@ class _AccountPageState extends State<AccountPage> {
             new Padding(
               padding: const EdgeInsets.only(top: 12.0),
               child: new RaisedButton(
-                onPressed: () {
-                  setState(() {
-                    futureString = new QRCodeReader().scan().then((test){
-                      return showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              content: Text(test),
-                            );
-                          });
-                    });
-                    test = futureString.toString();
-                    
+                onPressed: () async {
+                  var data = await new QRCodeReader().scan();
 
-                  });
+                  print(data);
+
+                  await appendMoney(data);
+
+                  var a = await getTotalMoney();
+
+                  setState(() { money = a; });
 
                 },
                 child: new Text("RECEIVE MONEY"),
@@ -88,7 +103,10 @@ class _AccountPageState extends State<AccountPage> {
               padding: const EdgeInsets.only(top: 48.0),
               child: new RaisedButton(
                 onPressed: () {
-
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CameraApp()),
+                  );
                 },
                 child: new Text("LOAD IT FROM BANK ACCOUNT"),
               ),
@@ -110,6 +128,21 @@ class _AccountPageState extends State<AccountPage> {
 
                 },
                 child: new Text("STORE IT IN BANK ACCOUNT"),
+              ),
+            ),
+
+            new Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: new RaisedButton(
+                onPressed: () async {
+
+                  await testMoney();
+                  var a = await getTotalMoney();
+
+                  setState(() { money = a; });
+
+                },
+                child: new Text("TEST MONEY"),
               ),
             ),
 

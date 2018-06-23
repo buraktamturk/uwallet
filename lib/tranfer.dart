@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qr/qr.dart';
+import 'database.dart';
 
 class TransferPage extends StatefulWidget {
   TransferPage({Key key}) : super(key: key);
@@ -11,8 +13,8 @@ class TransferPage extends StatefulWidget {
 
 class _TransferPageState extends State<TransferPage> {
   bool buttonPressed = false;
+  TextEditingController controller = new TextEditingController();
 
-  QrImage image = new QrImage(data: "WhatTheHack Eurobank's Beyond Hackathon 2018 Winnners",size: 200.0);
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -24,34 +26,36 @@ class _TransferPageState extends State<TransferPage> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             new TextField(
+              controller: controller,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                   labelText: 'Enter the amount of money to send'
               ),
             ),
             new FlatButton(
-              onPressed: () {
-              return showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                  content: image,
+              onPressed: () async {
+                print(controller.text);
+                var code = await splitMoney(int.parse(controller.text));
 
+                print("the code is:");
+                print(code.substring(10, 20));
 
-//                    content: Text("asasd"),
-              );
+                await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      content: new QrImage(data: code, version: 15, errorCorrectionLevel: QrErrorCorrectLevel.L, size: 250.0,
+                        onError: (ex) {
+                          print("[QR] ERROR - $ex");
+                        },),
+                    );
+                  }
+                );
 
-
-//                setState(() {
-//                  buttonPressed = true;
-//                  image = new QrImage(data: )
-//                );
-              },
-              );
+                Navigator.pop(context);
               },
               child: new Text("SEND"),
             ),
-            buttonPressed ? image : new Text("")
           ],
         ),
       ),

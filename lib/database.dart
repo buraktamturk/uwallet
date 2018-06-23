@@ -1,5 +1,6 @@
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'package:http/http.dart' as http;
@@ -34,21 +35,89 @@ Future<int> getTotalMoney() async {
   return (result[0]["amount"] ?? 0) + 1;
 }
 
-Future appendMoney(String money) async {
-  var result = await http.post('https://api.ecb.robinsoft.org/cash', body: {
-    "cashs": [],
-    "amounts": []
-  });
+Future directStore(String money) async {
+  var parts2 = money.split('.');
 
-  print(result);
-
-
+  var db = await _db();
+  await db.insert("cash", { "amount": parts2[0], "serial": parts2[1], "token": money });
 }
 
-Future<String> splitMoney(int amount) async {
+Future appendMoney(String money) async {
+  var parts = money.split('.');
 
+  print(parts[0]);
 
+  var result = await http.post('https://api.ecb.robinsoft.org/cash',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: json.encode({
+        "cashs": [
+          money
+        ],
+        "amounts": [
+          parts[0]
+        ]
+      })
+  );
 
+  var xx = json.decode(result.body)[0];
 
+  await directStore(xx);
+}
 
+Future splitMoney(int amount) async {
+  var ids = [];
+  var tokens = [];
+
+  var db = await _db();
+  var results = await db.rawQuery("SELECT * FROM cash");
+
+  int reached_amount = 0;
+  for(var result in results) {
+    ids.add(result["id"]);
+    tokens.add(result["token"]);
+
+    reached_amount += result["amount"];
+    if(reached_amount >= amount) {
+
+      var response = await http.post('https://api.ecb.robinsoft.org/cash',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: json.encode({
+            "cashs": tokens,
+            "amounts": [
+              amount,
+              reached_amount - amount
+            ].where((a) => a != 0).toList()
+          })
+      );
+
+      var xx = json.decode(response.body);
+
+      print(xx);
+
+      for(var id in ids) {
+        print(id);
+        await db.delete("cash", where: "id = ?", whereArgs: [id]);
+      }
+
+      if(xx.length == 2) {
+        await directStore(xx[1]);
+      }
+
+      return xx[0];
+    }
+  }
+
+  throw new Exception("You do not have enought money for this operation.");
+}
+
+Future testMoney() async {
+  var result = await http.get('https://api.ecb.robinsoft.org/test_money');
+
+  print(result.body);
+
+  await appendMoney(result.body);
 }
