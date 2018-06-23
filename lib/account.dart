@@ -1,10 +1,60 @@
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'tranfer.dart';
 import 'package:qrcode_reader/QRCodeReader.dart';
 import 'dart:async';
 import 'database.dart';
 import 'recognition.dart';
+import 'package:http/http.dart' as http;
+
+String faceId;
+
+authenticate(BuildContext context) async {
+
+
+  if(faceId != null) {
+    var id = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CameraApp()),
+    );
+    
+    var response = await http.post(
+        'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/verify',
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': '1cfcc9173e2c4d50a0584a9a0b5bd532'
+        },
+        body: json.encode({
+          "faceId1": faceId,
+          "faceId2": id
+        })
+    );
+
+    var xx = json.decode(response.body);
+
+    if (xx["confidence"] > 0.8) {
+      print("same person");
+    } else {
+      throw new Exception("not same person");
+    }
+  }
+}
+
+error(BuildContext context, Future e) async {
+  try {
+    await e;
+  } catch(e) {
+    showDialog(context: context, builder: (BuildContext context) {
+      return new AlertDialog(
+        content: e.message
+      );
+    });
+
+    throw e;
+  }
+}
 
 class AccountPage extends StatefulWidget {
   AccountPage({Key key}) : super(key: key);
@@ -16,6 +66,8 @@ class AccountPage extends StatefulWidget {
 class _AccountPageState extends State<AccountPage> {
   Future<String> futureString;
   String test;
+
+
 
   int money = 0;
 
@@ -67,6 +119,10 @@ class _AccountPageState extends State<AccountPage> {
               padding: const EdgeInsets.only(top: 48.0),
               child: new RaisedButton(
                 onPressed: () async {
+
+                  await error(context, authenticate(context));
+
+
                   await Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => TransferPage()),
@@ -143,6 +199,47 @@ class _AccountPageState extends State<AccountPage> {
 
                 },
                 child: new Text("TEST MONEY"),
+              ),
+            ),
+
+            new Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: new RaisedButton(
+                onPressed: () async {
+                  var id = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CameraApp()),
+                  );
+
+                  if(faceId == null) {
+                    faceId = id;
+
+                    setState(() { });
+                  } else {
+                    var response = await http.post(
+                        'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/verify',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Ocp-Apim-Subscription-Key': '1cfcc9173e2c4d50a0584a9a0b5bd532'
+                        },
+                        body: json.encode({
+                          "faceId1": faceId,
+                          "faceId2": id
+                        })
+                    );
+
+                    var xx = json.decode(response.body);
+
+                    if(xx["confidence"] > 0.8) {
+                      print("same person");
+                    } else {
+                      print("not same person");
+                    }
+                  }
+
+
+                },
+                child: new Text(faceId == null ? "SETUP SECURITY" : "UNLOCK"),
               ),
             ),
 

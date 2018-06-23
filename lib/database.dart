@@ -32,7 +32,7 @@ Future<int> getTotalMoney() async {
 
   var result = await db.rawQuery("SELECT SUM(amount) as amount FROM cash");
 
-  return (result[0]["amount"] ?? 0) + 1;
+  return (result[0]["amount"] ?? 0);
 }
 
 Future directStore(String money) async {
