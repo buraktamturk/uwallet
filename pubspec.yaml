@@ -11,6 +11,8 @@ version: 1.0.0+1
 
 dependencies:
   qr_flutter: ^1.1.1
+  sqflite: any
+  path: 1.6.0
   flutter:
     sdk: flutter
 

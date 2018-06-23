@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'tranfer.dart';
+import 'database.dart';
 
 class AccountPage extends StatefulWidget {
   AccountPage({Key key}) : super(key: key);
@@ -57,7 +58,10 @@ class _AccountPageState extends State<AccountPage> {
             new Padding(
               padding: const EdgeInsets.only(top: 12.0),
               child: new RaisedButton(
-                onPressed: () {
+                onPressed: () async {
+
+                  var money = await getTotalMoney();
+                  print(money);
 
                 },
                 child: new Text("RECEIVE MONEY"),

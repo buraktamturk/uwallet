@@ -20,7 +20,7 @@ class _TransferPageState extends State<TransferPage> {
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            
+
           ],
         ),
       ),
