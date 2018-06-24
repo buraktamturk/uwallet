@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
     return new MaterialApp(
       title: 'U-Wallet',
       theme: new ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.deepOrange,
       ),
       home: new AccountPage(),
     );

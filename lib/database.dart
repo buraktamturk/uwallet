@@ -35,6 +35,14 @@ Future<int> getTotalMoney() async {
   return (result[0]["amount"] ?? 0);
 }
 
+Future<List<Map>> allMoney() async {
+  var db = await _db();
+
+  var result = await db.rawQuery("SELECT * FROM cash ORDER BY amount DESC");
+
+  return result;
+}
+
 Future directStore(String money) async {
   var parts2 = money.split('.');
 
@@ -67,6 +75,19 @@ Future appendMoney(String money) async {
 }
 
 Future splitMoney(int amount) async {
+
+  var db = await _db();
+  var results = await db.rawQuery("SELECT * FROM cash WHERE amount = $amount");
+
+  if(results.length > 0) {
+
+    await db.delete("cash", where: "id = ?", whereArgs: [results[0]["id"]]);
+
+    return results[0]["token"];
+
+  }
+
+  /*
   var ids = [];
   var tokens = [];
 
@@ -110,7 +131,7 @@ Future splitMoney(int amount) async {
       return xx[0];
     }
   }
-
+*/
   throw new Exception("You do not have enought money for this operation.");
 }
 
@@ -120,4 +141,9 @@ Future testMoney([int amount = 100]) async {
   print(result.body);
 
   await appendMoney(result.body);
+}
+
+Future delete(int id) async {
+  var db = await _db();
+  await db.delete("cash", where: "id = ?", whereArgs: [id]);
 }

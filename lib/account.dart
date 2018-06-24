@@ -8,6 +8,10 @@ import 'dart:async';
 import 'database.dart';
 import 'recognition.dart';
 import 'package:http/http.dart' as http;
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qr/qr.dart';
+
+Map mockedAmounts = new Map();
 
 String faceId;
 
@@ -22,6 +26,10 @@ Future<String> loginWithBanking(BuildContext context) async {
           content: new Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
+              new Padding(
+                padding: EdgeInsets.only(left: 24.0, right: 24.0, top: 5.0, bottom: 5.0),
+                child: new Image.asset("assets/eurobank.png")
+              ),
               new TextField(
                 controller: username,
                 decoration: InputDecoration(
@@ -78,31 +86,80 @@ Future<Map> selectAccount(BuildContext context, String token) async {
   return await showDialog(context: context,
       builder: (context){
         return AlertDialog(
-            content: new Column(
+            content: new SafeArea(
+            bottom: true,
+            top: true,
+            left: true,
+            right: true,
+            child: new Column(
                 mainAxisSize: MainAxisSize.min,
-                children: accounts.map((a) => new ListTile(
+                children: accounts.map((a) => new SafeArea(
+            bottom: true,
+            top: true,
+            left: true,
+            right: true,
+            child: new ListTile(
                   onTap: () {
                     Navigator.of(context).pop(a);
                   },
                   // leading: new Text(a["accountNumber"]),
                   leading: const Icon(Icons.account_balance_wallet),
-                  title: new Text(a["balanceAvailable"].toString() + "€"),
-                  subtitle: new Row(
+                  title: new Text(((a["balanceAvailable"] + ((mockedAmounts.containsKey(a["accountNumber"]) ? mockedAmounts[a["accountNumber"]] : 0) * 1.0)).toString() + "€")),
+                  subtitle: new SafeArea(
+                      bottom: true,
+                      top: true,
+                      left: true,
+                      right: true,
+                      child: new Row(
                     children: <Widget>[
-                      new Text(a["productType"] ?? ""),
-                      new Text(" / "),
-                      new Text(a["description"] ?? "")
+                      new Text(a["productType"] ?? "")
                     ],
-                  ),
-                )).cast<Widget>().toList()
+                  )),
+                ))).cast<Widget>().toList()
             )
-        );
+        ));
       }
   );
 }
+List<int> bankNotes = [5,10,20,50,100,200,500];
+
+class HowMuchPage extends StatefulWidget {
+  dynamic update;
+
+  HowMuchPage({Key key, this.update}) : super(key: key);
+
+  @override
+  _HowMuchPageState createState() => new _HowMuchPageState();
+}
+
+class _HowMuchPageState extends State<HowMuchPage> {
+  int selected = 5;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<int>(
+        items: bankNotes.map((int val) {
+          return new DropdownMenuItem<int>(
+            value: val,
+            child: new Text(val.toString()),
+          );
+        }).toList(),
+        value: selected,
+        hint: Text("Please choose a banknote"),
+        onChanged: (newVal) {
+          selected = newVal;
+          widget.update(newVal);
+setState(() {});
+        });
+  }
+}
+
+
+
+
 
 Future<int> howMuch(BuildContext context, int limit) async {
-  TextEditingController controller = new TextEditingController();
+  int selected_banknote = 5;
 
   return await showDialog(context: context,
       builder: (context){
@@ -110,19 +167,25 @@ Future<int> howMuch(BuildContext context, int limit) async {
             content: new Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  new TextField(
+                 /* new TextField(
                     controller: controller,
                     keyboardType: TextInputType.number,
                     decoration: new InputDecoration(
                         labelText: 'Amount'
                     ),
-                  ),
+                  ),*/
+
+                  HowMuchPage(update: (a) {
+                    selected_banknote = a;
+                  }),
+
+
                   new Padding(
                     padding: EdgeInsets.only(top: 16.0),
                     child: new RaisedButton(
                       child: new Text('Okay'),
                       onPressed: () {
-                        Navigator.pop(context, int.parse(controller.text));
+                        Navigator.pop(context, selected_banknote);
                       },
                     )
                   )
@@ -173,8 +236,6 @@ showError(BuildContext context, String message) async {
 
 
 authenticate(BuildContext context) async {
-
-
   if(faceId != null) {
     var id = await Navigator.push(
       context,
@@ -198,7 +259,7 @@ authenticate(BuildContext context) async {
     if (xx["confidence"] > 0.8) {
       print("same person");
     } else {
-      throw new Exception("not same person");
+      throw new Exception("invalid authentication");
     }
   }
 }
@@ -207,11 +268,7 @@ error(BuildContext context, Future e) async {
   try {
     await e;
   } catch(e) {
-    showDialog(context: context, builder: (BuildContext context) {
-      return new AlertDialog(
-        content: new Text(e.message)
-      );
-    });
+    showError(context, e.message);
 
     throw e;
   }
@@ -227,6 +284,7 @@ class AccountPage extends StatefulWidget {
 class _AccountPageState extends State<AccountPage> {
   Future<String> futureString;
   String test;
+  List moneys = [];
 
 
 
@@ -241,6 +299,71 @@ class _AccountPageState extends State<AccountPage> {
       setState(() { money = a; });
     });
 
+    allMoney()
+      .then((a) {
+        setState(() {
+          moneys = a;
+        });
+    });
+  }
+
+  Widget moneyx(Map money) {
+    return new GestureDetector(
+      onTap: () async {
+
+        await authenticate(context);
+
+        var code = money["token"];
+        await delete(money["id"]);
+
+        await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                content: new QrImage(data: code,
+                  version: 15,
+                  errorCorrectionLevel: QrErrorCorrectLevel.L,
+                  size: 250.0,
+                  onError: (ex) {
+                    print("[QR] ERROR - $ex");
+                  },),
+              );
+            }
+        );
+
+        try {
+          await appendMoney(code);
+        } catch (e) {
+
+        }
+
+        var c = await getTotalMoney();
+
+        setState(() { this.money = c; });
+
+
+        var b = await allMoney();
+        moneys = b;
+        setState(() {
+
+        });
+
+      },
+    child: new Card(
+      child:  Container(
+      width: 160.0,
+      child: new Column(
+        children: <Widget>[
+          new Padding(
+            padding: EdgeInsets.only(top: 48.0),
+        child: new Text(money["amount"].toString() + "€", style: Theme.of(context).textTheme.display2)),
+          new Padding(
+            padding: EdgeInsets.only(top: 48.0),
+            child: new Text(money["serial"].toString(), style: Theme.of(context).textTheme.body2)
+          )
+        ],
+      ),
+    )));
   }
 
   @override
@@ -248,79 +371,90 @@ class _AccountPageState extends State<AccountPage> {
     return new Scaffold(
       appBar: new AppBar(
         title: new Text("U-Wallet"),
+          actions: <Widget>[
+            new IconButton(
+              icon: new Icon(faceId == null ? Icons.lock_outline : Icons.lock_open),
+              onPressed: () async {
+                var id = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CameraApp()),
+                );
+
+                if(faceId == null) {
+                  faceId = id;
+
+                  setState(() { });
+                } else {
+                  var response = await http.post(
+                      'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/verify',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Ocp-Apim-Subscription-Key': '1cfcc9173e2c4d50a0584a9a0b5bd532'
+                      },
+                      body: json.encode({
+                        "faceId1": faceId,
+                        "faceId2": id
+                      })
+                  );
+
+                  var xx = json.decode(response.body);
+
+                  if(xx["confidence"] > 0.8) {
+                    faceId = null;
+
+                    setState(() { });
+                  } else {
+                    showError(context, "invalid authentication");
+                  }
+                }
+              },
+            ),
+          ],
       ),
       body: new Center(
-        child: new Column(
+        child: new SingleChildScrollView(
+    child: new Column(
 
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
+            Container(
+              margin: EdgeInsets.only(top: 20.0),
+              height: 200.0,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: moneys.map((a) => moneyx(a)).toList(),
+              ),
+            ),
+
             new Padding(
-              padding: const EdgeInsets.only(top: 64.0),
+              padding: const EdgeInsets.only(top: 5.0, right: 5.0),
               child: new Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.max,
                   children: [
                     new Text(
-                        'You have'
-                    ),
-
-                    new Text(
-                      '$money€',
-                      style: Theme.of(context).textTheme.display3,
-                    ),
-
-                    new Text(
-                        'on your wallet.'
-                    ),
-
+                        'Total: $money€',
+                        style: Theme.of(context).textTheme.caption,
+                        textAlign: TextAlign.right,
+                      textScaleFactor: 1.5,
+                      )
                   ]
               ),
             ),
 
-
             new Padding(
-              padding: const EdgeInsets.only(top: 48.0),
-              child: new RaisedButton(
-                onPressed: () async {
-
-                  await error(context, authenticate(context));
-
-
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => TransferPage()),
-                  );
-
-                  var a = await getTotalMoney();
-
-                  setState(() { money = a; });
-                },
-                child: new Text("SEND MONEY"),
-              ),
+              padding: EdgeInsets.only(left: 72.0, right: 72.0, top: 24.0),
+              child: new Image.asset("assets/eurobank.png")
             ),
 
             new Padding(
-              padding: const EdgeInsets.only(top: 12.0),
-              child: new RaisedButton(
-                onPressed: () async {
-                  var data = await new QRCodeReader().scan();
-
-                  print(data);
-
-                  await appendMoney(data);
-
-                  var a = await getTotalMoney();
-
-                  setState(() { money = a; });
-
-                },
-                child: new Text("RECEIVE MONEY"),
-              ),
-            ),
-
-            new Padding(
-              padding: const EdgeInsets.only(top: 48.0),
+              padding: const EdgeInsets.only(top: 24.0),
               child: new RaisedButton(
                 onPressed: () async {
                   try {
+                    await authenticate(context);
+
                     var token = await loginWithBanking(context);
                     print(token);
 
@@ -339,9 +473,23 @@ class _AccountPageState extends State<AccountPage> {
                       money = a;
                     });
 
+
+                    var b = await allMoney();
+                    moneys = b;
+                    setState(() {
+
+                    });
+
+
                     await showSuccess(context,
                         "Your bank account balance was ${account["balanceAvailable"]}€, after the withdrawal of $price€, it became: ${account["balanceAvailable"] -
                             price}€");
+
+                    if(mockedAmounts.containsKey(account["accountNumber"])) {
+                      mockedAmounts[account["accountNumber"]] -= price;
+                    } else {
+                      mockedAmounts[account["accountNumber"]] = -price;
+                    }
                   } catch(e) {
                     showError(context, e.message);
                   }
@@ -355,6 +503,8 @@ class _AccountPageState extends State<AccountPage> {
               child: new RaisedButton(
                 onPressed: () async {
                   try {
+                    await authenticate(context);
+
                     var token = await loginWithBanking(context);
                     print(token);
 
@@ -370,7 +520,20 @@ class _AccountPageState extends State<AccountPage> {
 
                     setState(() { money = a; });
 
+
+                    var b = await allMoney();
+                    moneys = b;
+                    setState(() {
+
+                    });
+
                     await showSuccess(context, "Your bank account balance was ${account["balanceAvailable"]}€ after the deposit of $price, it became: ${account["balanceAvailable"] + price}");
+
+                    if(mockedAmounts.containsKey(account["accountNumber"])) {
+                      mockedAmounts[account["accountNumber"]] += price;
+                    } else {
+                      mockedAmounts[account["accountNumber"]] = price;
+                    }
                   } catch(e) {
                     showError(context, e.message);
                   }
@@ -379,50 +542,90 @@ class _AccountPageState extends State<AccountPage> {
               ),
             ),
 
+/*
             new Padding(
-              padding: const EdgeInsets.only(top: 12.0),
+              padding: const EdgeInsets.only(top: 48.0),
               child: new RaisedButton(
                 onPressed: () async {
-                  var id = await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CameraApp()),
-                  );
 
-                  if(faceId == null) {
-                    faceId = id;
+                  try {
+                    await authenticate(context);
 
-                    setState(() { });
-                  } else {
-                    var response = await http.post(
-                        'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/verify',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          'Ocp-Apim-Subscription-Key': '1cfcc9173e2c4d50a0584a9a0b5bd532'
-                        },
-                        body: json.encode({
-                          "faceId1": faceId,
-                          "faceId2": id
-                        })
+                    var price = await howMuch(context, 100);
+
+                    var code = await splitMoney(price);
+
+                    await showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            content: new QrImage(data: code,
+                              version: 15,
+                              errorCorrectionLevel: QrErrorCorrectLevel.L,
+                              size: 250.0,
+                              onError: (ex) {
+                                print("[QR] ERROR - $ex");
+                              },),
+                          );
+                        }
                     );
 
-                    var xx = json.decode(response.body);
+                    try {
+                      await appendMoney(code);
+                    } catch (e) {
 
-                    if(xx["confidence"] > 0.8) {
-                      print("same person");
-                    } else {
-                      print("not same person");
                     }
+                  } catch(e) {
+                    await showError(context, e.message);
                   }
+
+                  var a = await getTotalMoney();
+
+                  setState(() { money = a; });
+
+
+                  var b = await allMoney();
+                  moneys = b;
+                  setState(() {
+
+                  });
                 },
-                child: new Text(faceId == null ? "SETUP SECURITY" : "UNLOCK"),
+                child: new Text("SEND MONEY"),
               ),
             ),
+*/
+            new Padding(
+              padding: const EdgeInsets.only(top: 48.0),
+              child: new RaisedButton(
+                color: Colors.deepOrange,
+                textColor: Colors.white,
+                onPressed: () async {
+                  var data = await new QRCodeReader().scan();
 
+                  print(data);
+
+                  await appendMoney(data);
+
+                  var a = await getTotalMoney();
+
+                  setState(() { money = a; });
+
+
+                  var b = await allMoney();
+                  moneys = b;
+                  setState(() {
+
+                  });
+
+                },
+                child: new Text("RECEIVE MONEY"),
+              ),
+            ),
           ],
         ),
 
       ),
 
-    );
+    ));
   }
 }

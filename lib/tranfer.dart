@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:qr/qr.dart';
 import 'database.dart';
-
+import 'account.dart';
 class TransferPage extends StatefulWidget {
   TransferPage({Key key}) : super(key: key);
 

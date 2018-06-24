@@ -17,6 +17,7 @@ class CameraApp extends StatefulWidget {
 
 class _CameraAppState extends State<CameraApp> {
   CameraController controller;
+  String location;
 
   @override
   void initState() {
@@ -44,7 +45,7 @@ class _CameraAppState extends State<CameraApp> {
     }
 
     try {
-      await controller.takePicture(filePath);
+      await controller.takePicture(filePath, );
     } on CameraException catch (e) {
       return null;
     }
@@ -68,8 +69,10 @@ class _CameraAppState extends State<CameraApp> {
 
     new GestureDetector(
     onTap: () async {
-      var location = await takePicture();
+      location = await takePicture();
       print(location);
+
+      setState(() {});
 
       var client = new http.Client();
 
@@ -93,8 +96,8 @@ class _CameraAppState extends State<CameraApp> {
         backgroundColor: Color.fromARGB(255, 100, 100, 100),
         body: new Column(
           children: <Widget>[
-            new Padding(padding: new EdgeInsets.all(12.0), child: new Text("Stare at the camera")),
-            new Padding(padding: new EdgeInsets.only(left: 45.0, right: 45.0), child: new AspectRatio(aspectRatio: controller.value.aspectRatio, child: new CameraPreview(controller))),
+            new Padding(padding: new EdgeInsets.all(12.0), child: new Text(location == null ? "Stare at the camera" : "Detecting Face.. Please wait...")),
+            new Padding(padding: new EdgeInsets.only(left: 45.0, right: 45.0), child: new AspectRatio(aspectRatio: controller.value.aspectRatio, child: location == null ? new CameraPreview(controller) : new Image.file(new File(location)))),
           ]
         )
       )
