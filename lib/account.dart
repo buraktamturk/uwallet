@@ -62,6 +62,115 @@ Future<String> loginWithBanking(BuildContext context) async {
   return token;
 }
 
+Future<Map> selectAccount(BuildContext context, String token) async {
+  var response = await http.get('https://api.eu-de.apiconnect.ibmcloud.com/eurobankgr-hackathon/hackathon/me/accounts',
+      headers: {
+        'Authorization': 'Bearer $token'
+      });
+
+  var accounts = json.decode(response.body)["accounts"];
+  print(accounts);
+
+  if(accounts == null || accounts.length == 0) {
+    throw new Exception('no account found');
+  }
+
+  return await showDialog(context: context,
+      builder: (context){
+        return AlertDialog(
+            content: new Column(
+                mainAxisSize: MainAxisSize.min,
+                children: accounts.map((a) => new ListTile(
+                  onTap: () {
+                    Navigator.of(context).pop(a);
+                  },
+                  // leading: new Text(a["accountNumber"]),
+                  leading: const Icon(Icons.account_balance_wallet),
+                  title: new Text(a["balanceAvailable"].toString() + "€"),
+                  subtitle: new Row(
+                    children: <Widget>[
+                      new Text(a["productType"] ?? ""),
+                      new Text(" / "),
+                      new Text(a["description"] ?? "")
+                    ],
+                  ),
+                )).cast<Widget>().toList()
+            )
+        );
+      }
+  );
+}
+
+Future<int> howMuch(BuildContext context, int limit) async {
+  TextEditingController controller = new TextEditingController();
+
+  return await showDialog(context: context,
+      builder: (context){
+        return AlertDialog(
+            content: new Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  new TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    decoration: new InputDecoration(
+                        labelText: 'Amount'
+                    ),
+                  ),
+                  new Padding(
+                    padding: EdgeInsets.only(top: 16.0),
+                    child: new RaisedButton(
+                      child: new Text('Okay'),
+                      onPressed: () {
+                        Navigator.pop(context, int.parse(controller.text));
+                      },
+                    )
+                  )
+                ],
+            )
+        );
+      }
+  );
+}
+
+showSuccess(BuildContext context, String message) async {
+  await showDialog(context: context,
+      builder: (context){
+        return AlertDialog(
+            content: new Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                new Icon(Icons.insert_emoticon, color: Colors.green, size: 64.0),
+                new Padding(
+                    padding: EdgeInsets.only(top: 16.0),
+                    child: new Text(message, textAlign: TextAlign.center)
+                )
+              ],
+            )
+        );
+      }
+  );
+}
+
+showError(BuildContext context, String message) async {
+  await showDialog(context: context,
+      builder: (context){
+        return AlertDialog(
+            content: new Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                new Icon(Icons.error_outline, color: Colors.red, size: 64.0),
+                new Padding(
+                    padding: EdgeInsets.only(top: 16.0),
+                    child: new Text("Error: " + message, textAlign: TextAlign.center)
+                )
+              ],
+            )
+        );
+      }
+  );
+}
+
 
 authenticate(BuildContext context) async {
 
@@ -211,10 +320,31 @@ class _AccountPageState extends State<AccountPage> {
               padding: const EdgeInsets.only(top: 48.0),
               child: new RaisedButton(
                 onPressed: () async {
+                  try {
+                    var token = await loginWithBanking(context);
+                    print(token);
 
-                  var token = await loginWithBanking(context);
-                  print(token);
+                    var account = await selectAccount(context, token);
+                    print(account);
 
+                    var price = await howMuch(
+                        context, account["balanceAvailable"].round());
+
+                    print(price);
+
+                    await testMoney(price);
+                    var a = await getTotalMoney();
+
+                    setState(() {
+                      money = a;
+                    });
+
+                    await showSuccess(context,
+                        "Your bank account balance was ${account["balanceAvailable"]}€, after the withdrawal of $price€, it became: ${account["balanceAvailable"] -
+                            price}€");
+                  } catch(e) {
+                    showError(context, e.message);
+                  }
                 },
                 child: new Text("LOAD IT FROM BANK ACCOUNT"),
               ),
@@ -223,34 +353,29 @@ class _AccountPageState extends State<AccountPage> {
             new Padding(
               padding: const EdgeInsets.only(top: 12.0),
               child: new RaisedButton(
-                onPressed: () {
-                    if(futureString != null){
-                      return showDialog(
-                      context: context,
-                      builder: (context) {
-                      return AlertDialog(
-                    content: Text(test),
-                      );
-                    });}
+                onPressed: () async {
+                  try {
+                    var token = await loginWithBanking(context);
+                    print(token);
 
+                    var account = await selectAccount(context, token);
+                    print(account);
 
+                    var price = await howMuch(context, account["balanceAvailable"].round());
+
+                    print(price);
+
+                    await splitMoney(price);
+                    var a = await getTotalMoney();
+
+                    setState(() { money = a; });
+
+                    await showSuccess(context, "Your bank account balance was ${account["balanceAvailable"]}€ after the deposit of $price, it became: ${account["balanceAvailable"] + price}");
+                  } catch(e) {
+                    showError(context, e.message);
+                  }
                 },
                 child: new Text("STORE IT IN BANK ACCOUNT"),
-              ),
-            ),
-
-            new Padding(
-              padding: const EdgeInsets.only(top: 12.0),
-              child: new RaisedButton(
-                onPressed: () async {
-
-                  await testMoney();
-                  var a = await getTotalMoney();
-
-                  setState(() { money = a; });
-
-                },
-                child: new Text("TEST MONEY"),
               ),
             ),
 
@@ -288,8 +413,6 @@ class _AccountPageState extends State<AccountPage> {
                       print("not same person");
                     }
                   }
-
-
                 },
                 child: new Text(faceId == null ? "SETUP SECURITY" : "UNLOCK"),
               ),

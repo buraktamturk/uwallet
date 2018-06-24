@@ -114,8 +114,8 @@ Future splitMoney(int amount) async {
   throw new Exception("You do not have enought money for this operation.");
 }
 
-Future testMoney() async {
-  var result = await http.get('https://api.ecb.robinsoft.org/test_money');
+Future testMoney([int amount = 100]) async {
+  var result = await http.get('https://api.ecb.robinsoft.org/test_money?amount=$amount');
 
   print(result.body);
 

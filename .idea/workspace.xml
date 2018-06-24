@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b9c7a329-d1ac-40ea-a482-8fd2d093ef7f" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/account.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/account.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/tranfer.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/tranfer.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/database.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/database.dart" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -34,8 +33,8 @@
       <file leaf-file-name="account.dart" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/account.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="179">
-              <caret line="216" lean-forward="true" selection-start-line="216" selection-end-line="216" />
+            <state relative-caret-position="145">
+              <caret line="142" column="77" selection-start-line="142" selection-start-column="77" selection-end-line="142" selection-end-column="77" />
               <folding>
                 <element signature="e#1#23#0" expanded="true" />
               </folding>
@@ -43,11 +42,20 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="libobject_patch.dart" pinned="false" current-in-tab="false">
+        <entry file="mock:///libobject_patch.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="176">
+              <caret line="45" selection-start-line="45" selection-end-line="45" />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="database.dart" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/database.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1150">
-              <caret line="94" column="8" selection-start-line="94" selection-start-column="8" selection-end-line="94" selection-end-column="8" />
+            <state relative-caret-position="386">
+              <caret line="115" selection-start-line="115" selection-end-line="115" />
               <folding>
                 <element signature="e#1#21#0" expanded="true" />
               </folding>
@@ -70,8 +78,8 @@
       <file leaf-file-name="tranfer.dart" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/tranfer.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="336">
-              <caret line="41" selection-start-line="41" selection-end-line="41" />
+            <state relative-caret-position="-49">
+              <caret line="34" column="20" selection-start-line="34" selection-start-column="20" selection-end-line="34" selection-end-column="20" />
               <folding>
                 <element signature="e#1#40#0" expanded="true" />
               </folding>
@@ -119,16 +127,19 @@
     <findStrings>
       <find>offline ac</find>
       <find>qrcode_reader</find>
-      <find>testMoney</find>
       <find>testmoney</find>
       <find>reached_amount</find>
       <find>splitMoney</find>
       <find>not the sa</find>
-      <find>TransferPage</find>
-      <find>e.message</find>
       <find>Load</find>
-      <find>loginWithBanking</find>
       <find>auth</find>
+      <find>loginWithBanking</find>
+      <find>TransferPage</find>
+      <find>testMoney</find>
+      <find>throw new e</find>
+      <find>e.message</find>
+      <find>accounts</find>
+      <find>showError</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -138,10 +149,10 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/lib/main.dart" />
-        <option value="$PROJECT_DIR$/lib/database.dart" />
         <option value="$PROJECT_DIR$/pubspec.yaml" />
         <option value="$PROJECT_DIR$/lib/recognition.dart" />
         <option value="$PROJECT_DIR$/lib/tranfer.dart" />
+        <option value="$PROJECT_DIR$/lib/database.dart" />
         <option value="$PROJECT_DIR$/lib/account.dart" />
       </list>
     </option>
@@ -271,12 +282,12 @@
       <option name="presentableId" value="Default" />
       <updated>1529693878998</updated>
       <workItem from="1529693904148" duration="12622000" />
-      <workItem from="1529759271894" duration="16984000" />
+      <workItem from="1529759271894" duration="20943000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="29606000" />
+    <option name="totallyTimeSpent" value="33565000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="1027" extended-state="6" />
@@ -334,7 +345,12 @@
           <line>81</line>
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="1" />
+      <default-breakpoints>
+        <breakpoint type="dart-exception">
+          <properties />
+        </breakpoint>
+      </default-breakpoints>
+      <option name="time" value="2" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -433,16 +449,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/tranfer.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="41" selection-start-line="41" selection-end-line="41" />
-          <folding>
-            <element signature="e#1#40#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/recognition.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="111">
@@ -463,10 +469,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/lib/tranfer.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-49">
+          <caret line="34" column="20" selection-start-line="34" selection-start-column="20" selection-end-line="34" selection-end-column="20" />
+          <folding>
+            <element signature="e#1#40#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/database.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1150">
-          <caret line="94" column="8" selection-start-line="94" selection-start-column="8" selection-end-line="94" selection-end-column="8" />
+        <state relative-caret-position="386">
+          <caret line="115" selection-start-line="115" selection-end-line="115" />
           <folding>
             <element signature="e#1#21#0" expanded="true" />
           </folding>
@@ -475,8 +491,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/account.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="179">
-          <caret line="216" lean-forward="true" selection-start-line="216" selection-end-line="216" />
+        <state relative-caret-position="145">
+          <caret line="142" column="77" selection-start-line="142" selection-start-column="77" selection-end-line="142" selection-end-column="77" />
           <folding>
             <element signature="e#1#23#0" expanded="true" />
           </folding>
