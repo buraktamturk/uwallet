@@ -2,7 +2,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'tranfer.dart';
 import 'package:qrcode_reader/QRCodeReader.dart';
 import 'dart:async';
 import 'database.dart';
