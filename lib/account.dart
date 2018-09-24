@@ -140,7 +140,7 @@ class _HowMuchPageState extends State<HowMuchPage> {
         items: bankNotes.map((int val) {
           return new DropdownMenuItem<int>(
             value: val,
-            child: new Text(val.toString()),
+            child: new Text("$val€"),
           );
         }).toList(),
         value: selected,
@@ -342,11 +342,9 @@ class _AccountPageState extends State<AccountPage> {
 
 
         var b = await allMoney();
-        moneys = b;
         setState(() {
-
+          moneys = b;
         });
-
       },
     child: new Card(
       child:  Container(
@@ -380,9 +378,9 @@ class _AccountPageState extends State<AccountPage> {
                 );
 
                 if(faceId == null) {
-                  faceId = id;
-
-                  setState(() { });
+                  setState(() {
+                    faceId = id;
+                  });
                 } else {
                   var response = await http.post(
                       'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/verify',
@@ -399,9 +397,9 @@ class _AccountPageState extends State<AccountPage> {
                   var xx = json.decode(response.body);
 
                   if(xx["confidence"] > 0.8) {
-                    faceId = null;
-
-                    setState(() { });
+                    setState(() {
+                      faceId = null;
+                    });
                   } else {
                     showError(context, "invalid authentication");
                   }
@@ -413,7 +411,6 @@ class _AccountPageState extends State<AccountPage> {
       body: new Center(
         child: new SingleChildScrollView(
     child: new Column(
-
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Container(
@@ -472,13 +469,10 @@ class _AccountPageState extends State<AccountPage> {
                       money = a;
                     });
 
-
                     var b = await allMoney();
-                    moneys = b;
                     setState(() {
-
+                      moneys = b;
                     });
-
 
                     await showSuccess(context,
                         "Your bank account balance was ${account["balanceAvailable"]}€, after the withdrawal of $price€, it became: ${account["balanceAvailable"] -
@@ -493,7 +487,7 @@ class _AccountPageState extends State<AccountPage> {
                     showError(context, e.message);
                   }
                 },
-                child: new Text("LOAD IT FROM BANK ACCOUNT"),
+                child: new Text("WITHDRAW"),
               ),
             ),
 
@@ -519,14 +513,12 @@ class _AccountPageState extends State<AccountPage> {
 
                     setState(() { money = a; });
 
-
                     var b = await allMoney();
-                    moneys = b;
                     setState(() {
-
+                      moneys = b;
                     });
 
-                    await showSuccess(context, "Your bank account balance was ${account["balanceAvailable"]}€ after the deposit of $price, it became: ${account["balanceAvailable"] + price}");
+                    await showSuccess(context, "Your bank account balance was ${account["balanceAvailable"]}€ after the deposit of $price€, it became: ${account["balanceAvailable"] + price}€");
 
                     if(mockedAmounts.containsKey(account["accountNumber"])) {
                       mockedAmounts[account["accountNumber"]] += price;
@@ -537,62 +529,9 @@ class _AccountPageState extends State<AccountPage> {
                     showError(context, e.message);
                   }
                 },
-                child: new Text("STORE IT IN BANK ACCOUNT"),
+                child: new Text("DEPOSIT"),
               ),
             ),
-
-/*
-            new Padding(
-              padding: const EdgeInsets.only(top: 48.0),
-              child: new RaisedButton(
-                onPressed: () async {
-
-                  try {
-                    await authenticate(context);
-
-                    var price = await howMuch(context, 100);
-
-                    var code = await splitMoney(price);
-
-                    await showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            content: new QrImage(data: code,
-                              version: 15,
-                              errorCorrectionLevel: QrErrorCorrectLevel.L,
-                              size: 250.0,
-                              onError: (ex) {
-                                print("[QR] ERROR - $ex");
-                              },),
-                          );
-                        }
-                    );
-
-                    try {
-                      await appendMoney(code);
-                    } catch (e) {
-
-                    }
-                  } catch(e) {
-                    await showError(context, e.message);
-                  }
-
-                  var a = await getTotalMoney();
-
-                  setState(() { money = a; });
-
-
-                  var b = await allMoney();
-                  moneys = b;
-                  setState(() {
-
-                  });
-                },
-                child: new Text("SEND MONEY"),
-              ),
-            ),
-*/
             new Padding(
               padding: const EdgeInsets.only(top: 48.0),
               child: new RaisedButton(
@@ -609,22 +548,20 @@ class _AccountPageState extends State<AccountPage> {
 
                   setState(() { money = a; });
 
-
                   var b = await allMoney();
-                  moneys = b;
                   setState(() {
-
+                    moneys = b;
                   });
-
                 },
-                child: new Text("RECEIVE MONEY"),
+                child: new Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: new Text("RECEIVE MONEY", textScaleFactor: 1.3),
+                )
               ),
             ),
           ],
         ),
-
       ),
-
     ));
   }
 }
